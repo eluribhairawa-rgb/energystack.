@@ -310,6 +310,12 @@ const { data: item, pending } = await useAsyncData(`article-${articleId}`, async
   };
 });
 
+// Missing article: keep the friendly "not found" view, but send a real 404 so
+// crawlers don't index it (QA H4).
+if (!item.value && import.meta.server) {
+  setResponseStatus(useRequestEvent()!, 404, 'Article not found')
+}
+
 // QA M5: related articles (same category, newest first, excluding this one)
 const { data: relatedArticles } = await useAsyncData(`article-${articleId}-related`, async () => {
   if (!item.value) return []

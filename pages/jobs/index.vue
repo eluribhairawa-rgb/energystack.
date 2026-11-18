@@ -262,7 +262,7 @@ function handleScroll(e: Event) {
 }
 
 // SERVER-SIDE DATA FETCHING (unfiltered initial page — filters start empty)
-const { data: initialJobs } = useAsyncData('home-jobs', async () => {
+const { data: initialJobs } = await useAsyncData('home-jobs', async () => {
   try {
     const { data } = await $fetch<{ data: any[] }>(`/api/jobs?limit=${INITIAL_JOBS_BATCH}&offset=0`)
 
