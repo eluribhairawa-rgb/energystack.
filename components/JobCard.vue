@@ -24,6 +24,7 @@
       </h3>
       <div class="flex items-center gap-3 mt-2 text-sm text-gray-500">
         <span v-if="item.location">{{ item.location }}</span>
+        <span v-if="postedLabel" class="text-gray-400">{{ postedLabel }}</span>
         <div v-if="item.experience_level" class="flex items-center gap-1">
           <Briefcase class="w-3.5 h-3.5" />
           <span>{{ item.experience_level }}</span>
@@ -51,4 +52,13 @@ const props = defineProps({
 })
 
 defineEmits(['click-job'])
+
+// QA M2: show when the job was posted
+const postedLabel = computed(() => {
+  const raw = props.item.posted_date || props.item.date
+  if (!raw) return ''
+  const d = new Date(raw)
+  if (Number.isNaN(d.getTime())) return ''
+  return 'Posted ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+})
 </script>

@@ -814,7 +814,11 @@ const calendarCells = computed<CalendarCell[]>(() => {
 })
 
 const events = computed<AgendaEvent[]>(() => {
-  return filteredMonthEvents.value.map((event) => ({
+  // QA L2: the "Upcoming dates" agenda hides events that have already ended
+  // (the calendar grid above still shows them).
+  return filteredMonthEvents.value
+    .filter((event) => (event.endDate || event.startDate) >= currentUtcDate)
+    .map((event) => ({
     id: event.id,
     ...formatDayMonth(event.startDate),
     title: event.title,

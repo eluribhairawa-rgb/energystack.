@@ -30,6 +30,11 @@ export default defineNuxtConfig({
       assetsBaseUrl: process.env.NUXT_PUBLIC_ASSETS_BASE_URL,
     }
   },
+  routeRules: {
+    // QA H1: there is no separate news index page; the homepage is the news list.
+    '/news': { redirect: { to: '/', statusCode: 301 } },
+    '/news/': { redirect: { to: '/', statusCode: 301 } },
+  },
   vite: {
     plugins: [
       ...tailwindcss(),

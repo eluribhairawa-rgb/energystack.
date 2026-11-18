@@ -26,6 +26,7 @@ const clearToasts = () => {
 
 <template>
   <div class="min-h-screen bg-white font-sans text-gray-900 flex flex-col relative">
+    <NuxtLoadingIndicator color="#e2f855" :height="3" />
 
     <!-- Centered Content Wrapper (Yesterday's Style) -->
     <div class="mx-auto w-full max-w-6xl flex flex-col flex-grow relative px-0 sm:px-4 lg:px-6">
