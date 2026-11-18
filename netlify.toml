@@ -1,0 +1,5 @@
+[context.production]
+    # This only triggers on your main/production branch
+    # 'false' exits with code 1, but we want code 0 to ignore.
+    # So we use 'true' to exit with 0.
+    ignore = "true"

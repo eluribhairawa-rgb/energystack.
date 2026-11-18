@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Energy Jobs</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background-color: #ffffff; padding: 30px 20px; border-bottom: 1px solid #eeeeee; text-align: center; }
+        .logo { font-size: 24px; font-weight: bold; color: #000000; text-decoration: none; }
+        .content { padding: 20px; }
+        .greeting { font-size: 18px; margin-bottom: 20px; color: #111111; }
+        .card { display: block; text-decoration: none; color: inherit; margin-bottom: 20px; border-bottom: 1px solid #eeeeee; padding-bottom: 20px; }
+        .company-logo { width: 56px; height: 56px; object-fit: contain; border-radius: 8px; background-color: #f3f4f6; border: 1px solid #eeeeee; display: block; }
+        .tag { display: inline-block; background-color: #f3f4f6; color: #4b5563; font-size: 10px; font-weight: bold; padding: 3px 6px; border-radius: 4px; text-transform: uppercase; vertical-align: middle; }
+        .title { font-size: 16px; font-weight: bold; margin: 0 0 4px 0; color: #111111; line-height: 1.3; }
+        .company-name { font-size: 13px; color: #444444; font-weight: 600; }
+        .meta { font-size: 12px; color: #888888; vertical-align: middle; }
+        .footer { padding: 30px 20px; text-align: center; font-size: 12px; color: #888888; background-color: #f3f4f6; }
+        .footer a { color: #666666; text-decoration: underline; }
+
+        @media only screen and (max-width: 480px) {
+            .container { width: 100% !important; }
+            /* Mobile Logo Sizing - robust selectors to survive forwarding class renaming */
+            .company-logo, td.company-logo-cell img, td[width="56"] img { width: 44px !important; height: 44px !important; }
+            .company-logo-cell, td[width="56"] { width: 44px !important; padding-right: 10px !important; }
+            .title { font-size: 15px !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+    <!-- Wrapper Table to guarantee background styling in all clients and on forward -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f3f4f6; margin: 0; padding: 0; width: 100% !important;">
+        <tr>
+            <td align="center" valign="top" style="padding: 20px 0;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" class="container" style="max-width: 600px; background-color: #ffffff; border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
+                    <!-- Header -->
+                    <tr class="header">
+                        <td align="center" style="background-color: #ffffff; padding: 30px 20px; border-bottom: 1px solid #eeeeee;">
+                            <a href="https://energystacks.ai" class="logo" style="font-size: 24px; font-weight: bold; color: #000000; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">Energy Stacks</a>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td class="content" style="padding: 20px; background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                            <div class="greeting" style="font-size: 18px; margin-bottom: 20px; color: #111111; font-weight: bold;">
+                                Hello, {{ params.userName }}
+                            </div>
+                            <p style="color: #666666; font-size: 14px; margin-bottom: 25px; margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                                Here are the new energy jobs that match your preferences.
+                            </p>
+
+                            <!-- View All Jobs Button -->
+                            <div style="margin-bottom: 30px; text-align: center;">
+                                <a href="https://energystacks.ai/jobs" style="background-color: #e2f855; color: #000000; text-decoration: none; padding: 10px 24px; border-radius: 50px; font-weight: bold; font-size: 14px; display: inline-block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                                    View All Jobs
+                                </a>
+                            </div>
+
+                            <!-- Jobs Loop (Nested Table for Robust Forward-safe Layout) -->
+                            {% for item in params.jobItems %}
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" class="card" style="margin-bottom: 20px; border-bottom: 1px solid #eeeeee; padding-bottom: 20px; border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
+                                <tr>
+                                    <td valign="top" width="56" class="company-logo-cell" style="width: 56px; padding-right: 14px; text-align: left;">
+                                        <a href="{{ item.url }}" style="text-decoration: none; display: block;">
+                                            <img src="{{ item.companyLogo }}" alt="{{ item.company }}" width="56" height="56" class="company-logo" style="width: 56px; height: 56px; object-fit: contain; border-radius: 8px; background-color: #f3f4f6; border: 1px solid #eeeeee; display: block;" />
+                                        </a>
+                                    </td>
+                                    <td valign="top" align="left" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; text-align: left;">
+                                        <a href="{{ item.url }}" style="text-decoration: none; color: inherit; display: block;">
+                                            <h3 class="title" style="font-size: 16px; font-weight: bold; margin: 0 0 4px 0; color: #111111; line-height: 1.3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; text-align: left;">{{ item.title }}</h3>
+                                            <div style="margin-bottom: 6px; line-height: 1.2;">
+                                                <span class="company-name" style="font-size: 13px; color: #444444; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">{{ item.company }}</span>
+                                            </div>
+                                            <div style="line-height: 1.5;">
+                                                <span class="tag" style="display: inline-block; background-color: #f3f4f6; color: #4b5563; font-size: 10px; font-weight: bold; padding: 3px 6px; border-radius: 4px; text-transform: uppercase; vertical-align: middle; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">{{ item.category }}</span>
+                                                <span class="tag" style="display: inline-block; background-color: #f3f4f6; color: #4b5563; font-size: 10px; font-weight: bold; padding: 3px 6px; border-radius: 4px; text-transform: uppercase; vertical-align: middle; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin-left: 4px;">{{ item.employmentType }}</span>
+                                                <span class="meta" style="font-size: 12px; color: #888888; vertical-align: middle; margin-left: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">📍 {{ item.location }}</span>
+                                            </div>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            {% endfor %}
+
+                            <!-- Browse More Button -->
+                            <div style="text-align: center; margin-top: 30px;">
+                                <a href="https://energystacks.ai/jobs" style="background-color: #000000; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 50px; font-weight: bold; font-size: 14px; display: inline-block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">Browse More Jobs</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr class="footer">
+                        <td align="center" style="padding: 30px 20px; text-align: center; font-size: 12px; color: #888888; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; border-collapse: collapse;">
+                            <p style="margin: 0 0 15px 0; line-height: 1.5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                                Energy Stacks Inc.<br>
+                                123 Energy Way, Suite 400<br>
+                                Houston, TX 77002
+                            </p>
+                            <p style="margin: 0; line-height: 1.5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                                You received this email because you subscribed to Job Alerts.<br>
+                                <a href="{{ params.unsubscribeUrl }}" style="color: #666666; text-decoration: underline;">Unsubscribe</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

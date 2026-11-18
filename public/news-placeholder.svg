@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">News image unavailable</title>
+  <desc id="desc">Generic placeholder for a news article</desc>
+  <rect width="640" height="360" fill="#f3f4f6"/>
+  <rect x="190" y="105" width="260" height="150" rx="16" fill="#fff" stroke="#d1d5db" stroke-width="6"/>
+  <path d="M225 145h180M225 180h180M225 215h105" fill="none" stroke="#9ca3af" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="405" cy="215" r="16" fill="#e2f855"/>
+</svg>
