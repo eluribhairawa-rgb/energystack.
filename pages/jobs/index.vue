@@ -277,7 +277,6 @@ const { data: initialJobs } = useAsyncData('home-jobs', async () => {
     return []
   }
 }, {
-  server: false,
   default: () => []
 })
 

@@ -149,11 +149,11 @@
         <!-- Tab Content -->
         <div class="min-h-[300px]">
           <!-- Overview Content -->
-          <div v-if="activeDetailTab === 'Overview'" class="prose prose-base max-w-none text-gray-800 leading-relaxed pb-32 animate-in fade-in duration-300" v-html="item.description">
+          <div v-if="activeDetailTab === 'Overview'" class="prose prose-base max-w-none text-gray-800 leading-relaxed pb-8 animate-in fade-in duration-300" v-html="item.description">
           </div>
 
           <!-- KeyPoints Content -->
-          <div v-if="activeDetailTab === 'KeyPoints'" class="pb-32 animate-in fade-in duration-300">
+          <div v-if="activeDetailTab === 'KeyPoints'" class="pb-8 animate-in fade-in duration-300">
             <div v-if="item.key_points && Array.isArray(item.key_points) && item.key_points.length > 0">
               <ul class="space-y-4">
                 <li v-for="(point, index) in item.key_points" :key="index" class="flex items-start gap-3 text-base text-gray-800 leading-relaxed">
@@ -169,7 +169,7 @@
           </div>
 
           <!-- Article Source Content -->
-          <div v-if="activeDetailTab === 'Source'" class="pb-32 animate-in fade-in duration-300">
+          <div v-if="activeDetailTab === 'Source'" class="pb-8 animate-in fade-in duration-300">
             <p class="text-sm text-gray-500 mb-6">Read the full story from the original source:</p>
 
             <a v-if="item.url" :href="item.url" target="_blank" class="inline-block max-w-[288px] w-full cursor-pointer relative z-10">
@@ -193,6 +193,18 @@
               </div>
             </a>
           </div>
+
+          <!-- QA M5: related articles so the article page isn't a dead end -->
+          <section v-if="relatedArticles && relatedArticles.length" class="pb-32 pt-6 border-t border-gray-100">
+            <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">More {{ item.category !== 'Unclassified' ? item.category : '' }} news</h2>
+            <NewsCard
+              v-for="related in relatedArticles"
+              :key="related.id"
+              :item="related"
+              @click-news="(r: any) => router.push(`/news/${r.id}`)"
+            />
+          </section>
+          <div v-else class="pb-32"></div>
         </div>
       </div>
     </div>
@@ -297,6 +309,29 @@ const { data: item, pending } = await useAsyncData(`article-${articleId}`, async
     category: data.category || 'Unclassified'
   };
 });
+
+// QA M5: related articles (same category, newest first, excluding this one)
+const { data: relatedArticles } = await useAsyncData(`article-${articleId}-related`, async () => {
+  if (!item.value) return []
+  const params = new URLSearchParams({ limit: '5', offset: '0' })
+  if (item.value.category && item.value.category !== 'Unclassified') params.set('categories', item.value.category)
+  try {
+    const { data } = await $fetch<{ data: any[] }>(`/api/news?${params}`)
+    return (data || [])
+      .filter((r: any) => r.id !== articleId)
+      .slice(0, 4)
+      .map((r: any) => ({
+        ...r,
+        banner: getNewsImage(r, config.public.assetsBaseUrl as string),
+        url: r.source_url,
+        date: r.published_date,
+        category: r.category || 'Unclassified'
+      }))
+  } catch (e) {
+    console.error('Failed to load related articles:', e)
+    return []
+  }
+}, { lazy: true, default: () => [] })
 
 // Sync server-fetched data to Pinia store for player/caching
 watch(item, (newItem) => {
