@@ -4,12 +4,15 @@
       <p class="text-xs font-semibold uppercase tracking-[0.22em] text-amber-300">Energy Markets Dashboard</p>
       <h1 class="mt-2 text-2xl font-extrabold tracking-tight">Oil, Gas, Indices & Major Players</h1>
       <p class="mt-2 max-w-xl text-sm text-slate-200">
-        Live feed for upstream activity, commodities pricing, and large-cap sector performance.
+        Upstream activity, commodities pricing, and large-cap sector performance, with the time each figure was last updated.
       </p>
       <div class="mt-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-slate-100 ring-1 ring-white/20">
         <span class="h-2 w-2 rounded-full" :class="statusDotClass"></span>
         {{ dataStatusLabel }}
       </div>
+      <p v-if="freshness.asOf" class="mt-2 text-xs text-slate-300">
+        Latest quote: {{ formatDisplayDateTime(freshness.asOf) }}
+      </p>
     </section>
 
     <section class="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -57,7 +60,7 @@
         </div>
         <div class="flex flex-col items-end gap-1">
           <span class="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-600">Source: {{ dataSources.commodities }}</span>
-          <span class="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-600">History view</span>
+          <span class="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-600">As of {{ formatDisplayDate(asOf.commodities) }}</span>
         </div>
       </div>
 
@@ -69,6 +72,7 @@
               <th class="py-2 font-semibold">Last</th>
               <th class="py-2 font-semibold">Daily</th>
               <th class="py-2 font-semibold">Weekly</th>
+              <th class="py-2 font-semibold">As of</th>
               <th class="py-2 font-semibold">History</th>
             </tr>
           </thead>
@@ -88,6 +92,7 @@
               <td class="py-3" :class="row.week >= 0 ? 'text-emerald-600' : 'text-rose-600'">
                 {{ row.week >= 0 ? '+' : '' }}{{ row.week.toFixed(2) }}%
               </td>
+              <td class="py-3 text-xs text-stone-500">{{ formatDisplayDate(row.priceDate) }}</td>
               <td class="py-3">
                 <svg viewBox="0 0 120 36" class="h-9 w-28">
                   <polyline
@@ -125,7 +130,7 @@
           </div>
           <div class="flex flex-col items-end gap-1">
             <span class="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-600">Source: {{ dataSources.companies }}</span>
-            <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">Market cap focus</span>
+            <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">As of {{ formatDisplayDateTime(asOf.companies) }}</span>
           </div>
         </div>
 
@@ -157,7 +162,7 @@
           </div>
           <div class="flex flex-col items-end gap-1">
             <span class="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-600">Source: {{ dataSources.companies }}</span>
-            <span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-800">Execution layer</span>
+            <span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-800">As of {{ formatDisplayDateTime(asOf.companies) }}</span>
           </div>
         </div>
 
@@ -188,7 +193,10 @@
           <p class="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400">Global Index</p>
           <h3 class="mt-1 text-base font-extrabold">S&P 500, Nasdaq & Macro Benchmarks</h3>
         </div>
-        <span class="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-600">Source: {{ dataSources.indices }}</span>
+        <div class="flex flex-col items-end gap-1">
+          <span class="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-600">Source: {{ dataSources.indices }}</span>
+          <span class="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-600">As of {{ formatDisplayDateTime(asOf.indices) }}</span>
+        </div>
       </div>
 
       <div class="grid gap-3 md:grid-cols-2">
@@ -200,6 +208,7 @@
             </p>
           </div>
           <p class="text-xl font-black tracking-tight">{{ idx.value }}</p>
+          <p class="text-xs text-stone-500">{{ formatDisplayDateTime(idx.quoteTime) }}</p>
           <svg viewBox="0 0 200 56" class="mt-2 h-12 w-full">
             <polyline
               fill="none"
@@ -237,6 +246,7 @@ type CommodityRow = {
   unit: string
   day: number
   week: number
+  priceDate?: string | null
   history: Series
 }
 
@@ -246,12 +256,14 @@ type CompanyRow = {
   price: string
   marketCap: string
   change: number
+  quoteTime?: string | null
 }
 
 type IndexRow = {
   name: string
   value: string
   change: number
+  quoteTime?: string | null
   history: Series
 }
 
@@ -267,6 +279,7 @@ type StockPayload = {
   oilGasMajors: CompanyRow[]
   serviceCompanies: CompanyRow[]
   indices: IndexRow[]
+  asOf?: { rigCounts: string | null; commodities: string | null; companies: string | null; indices: string | null }
   fetchedAt?: string
 }
 
@@ -399,16 +412,53 @@ const dataSources = computed(() => {
   return stockData.value?.sources || fallbackStockData.sources!
 })
 
+const asOf = computed(() => stockData.value?.asOf || { rigCounts: null, commodities: null, companies: null, indices: null })
+
+// "Live" is based on the age of the newest intraday quote (companies/indices),
+// not on the request succeeding. Commodity prices are daily (date only), so
+// they don't drive the label.
+const LIVE_MAX_AGE_MIN = 30
+const STALE_MAX_AGE_HOURS = 72
+
+const now = ref(Date.now())
+let nowTimer: ReturnType<typeof setInterval> | null = null
+onMounted(() => { nowTimer = setInterval(() => { now.value = Date.now() }, 60_000) })
+onBeforeUnmount(() => { if (nowTimer) clearInterval(nowTimer) })
+
+const freshness = computed(() => {
+  const times = [asOf.value.companies, asOf.value.indices]
+    .map((v) => (v ? new Date(v).getTime() : NaN))
+    .filter((t) => Number.isFinite(t))
+  const latest = times.length ? Math.max(...times) : null
+  if (latest === null) return { state: 'unknown' as const, asOf: null as string | null, ageMin: null as number | null }
+  const ageMin = Math.max(0, (now.value - latest) / 60_000)
+  const state = ageMin <= LIVE_MAX_AGE_MIN ? 'live' as const : ageMin <= STALE_MAX_AGE_HOURS * 60 ? 'delayed' as const : 'stale' as const
+  return { state, asOf: new Date(latest).toISOString(), ageMin }
+})
+
+function formatAge(min: number): string {
+  if (min < 60) return `${Math.round(min)} min ago`
+  if (min < 48 * 60) return `${Math.round(min / 60)} h ago`
+  return `${Math.round(min / 1440)} days ago`
+}
+
 const dataStatusLabel = computed(() => {
-  if (pending.value) return 'Loading live market data'
+  if (pending.value) return 'Loading market data'
   if (error.value) return 'Using fallback preview data'
-  return 'Live'
+  const f = freshness.value
+  if (f.state === 'live') return 'Live'
+  if (f.state === 'delayed') return `Delayed · updated ${formatAge(f.ageMin!)}`
+  if (f.state === 'stale') return `Stale · last updated ${formatAge(f.ageMin!)}`
+  return 'Update time unavailable'
 })
 
 const statusDotClass = computed(() => {
   if (pending.value) return 'bg-amber-300 animate-pulse'
   if (error.value) return 'bg-rose-400'
-  return 'bg-lime-400'
+  const f = freshness.value
+  if (f.state === 'live') return 'bg-lime-400'
+  if (f.state === 'delayed') return 'bg-amber-300'
+  return 'bg-rose-400'
 })
 
 const commoditiesScrollRef = ref<HTMLElement | null>(null)
@@ -452,10 +502,18 @@ function formatDisplayDate(dateInput: string | null | undefined): string {
   const date = new Date(dateInput)
   if (Number.isNaN(date.getTime())) return '-'
   return date.toLocaleDateString('en-US', {
+    timeZone: 'UTC',
     day: '2-digit',
     month: 'short',
     year: 'numeric'
   })
+}
+
+function formatDisplayDateTime(input: string | null | undefined): string {
+  if (!input) return '-'
+  const date = new Date(input)
+  if (Number.isNaN(date.getTime())) return '-'
+  return date.toLocaleString('en-US', { day: '2-digit', month: 'short', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
 }
 
 function sparkline(data: Series, width: number, height: number): string {

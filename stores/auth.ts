@@ -340,7 +340,10 @@ export const useAuthStore = defineStore('auth', () => {
       await respondToCustomAuthChallenge({ email, code, session })
       return true
     } catch (e: any) {
-      error.value = 'This sign-in link is invalid or has expired.'
+      console.error('[magic-link] RespondToAuthChallenge failed:', e?.name, e?.message)
+      error.value = e?.name === 'NotAuthorizedException'
+        ? 'This sign-in link is invalid or has expired.'
+        : 'Sign-in failed. Please request a new link.'
       return false
     } finally {
       loading.value = false

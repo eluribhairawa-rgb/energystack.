@@ -42,13 +42,28 @@ function sortByPreferredOrder<T>(items: T[], getKey: (item: T) => string, prefer
     })
 }
 
+function toIso(value: unknown): string | null {
+    if (!value) return null
+    const d = value instanceof Date ? value : new Date(String(value))
+    return Number.isNaN(d.getTime()) ? null : d.toISOString()
+}
+// Newest timestamp (ISO string) among rows, or null.
+function latestOf(values: unknown[]): string | null {
+    let best: string | null = null
+    for (const v of values) {
+        const iso = typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : toIso(v)
+        if (iso && (!best || iso > best)) best = iso
+    }
+    return best
+}
+
 export default defineEventHandler(async () => {
     const db = getDb()
 
     const [rigRes, commodityRes, companyRes, indexRes] = await Promise.all([
         db.query(`SELECT region, total_count, wow_change, report_date, date_of_prior_count, change_from_last_year, date_of_last_year_count, source
               FROM rig_counts ORDER BY report_date DESC LIMIT 20`),
-        db.query(`SELECT cp.symbol, cp.last_price, cp.daily_change_pct, cp.weekly_change_pct, cp.price_date, cp.source, c.name, c.unit
+        db.query(`SELECT cp.symbol, cp.last_price, cp.daily_change_pct, cp.weekly_change_pct, to_char(cp.price_date, 'YYYY-MM-DD') AS price_date, cp.source, c.name, c.unit
               FROM commodity_prices cp LEFT JOIN commodities c ON c.symbol = cp.symbol
               ORDER BY cp.price_date DESC LIMIT 400`),
         db.query(`SELECT cq.ticker, cq.price, cq.change_pct, cq.quote_time, cq.source, co.name, co.category, co.market_cap_display
@@ -99,6 +114,7 @@ export default defineEventHandler(async () => {
             unit: row.unit ? `/ ${String(row.unit).replace(/^\$\//, '')}` : '',
             day: asNumber(row.daily_change_pct),
             week: asNumber(row.weekly_change_pct),
+            priceDate: row.price_date || null,
             history: (commodityHistory.get(symbol) || []).slice().reverse()
         })),
         (item) => item.ticker,
@@ -114,7 +130,8 @@ export default defineEventHandler(async () => {
         ticker,
         price: formatOptionalPrice(row.price),
         marketCap: row.market_cap_display || 'N/A',
-        change: asNumber(row.change_pct)
+        change: asNumber(row.change_pct),
+        quoteTime: toIso(row.quote_time)
     }))
     const oilGasMajors = sortByPreferredOrder(
         mappedCompanies.filter((row) => latestCompanyByTicker.get(row.ticker)?.category === 'major'),
@@ -138,6 +155,7 @@ export default defineEventHandler(async () => {
             name: row.name || symbol,
             value: formatIndexValue(asNumber(row.value)),
             change: asNumber(row.change_pct),
+            quoteTime: toIso(row.quote_time),
             history: (indexHistory.get(symbol) || []).slice().reverse()
         })),
         (item) => item.name, ['S&P 500', 'Nasdaq 100', 'STOXX 600', 'Nikkei 225']
@@ -150,6 +168,14 @@ export default defineEventHandler(async () => {
             commodities: deriveSourceLabel(commodityRows),
             companies: deriveSourceLabel(companyRows),
             indices: deriveSourceLabel(indexRows)
+        },
+        // Newest data timestamp per section. commodities is a plain date
+        // (YYYY-MM-DD, no time of day); companies/indices are ISO instants.
+        asOf: {
+            rigCounts: latestOf(rigRows.map((r) => r.report_date)),
+            commodities: latestOf(commodityRows.map((r) => r.price_date)),
+            companies: latestOf(companyRows.map((r) => r.quote_time)),
+            indices: latestOf(indexRows.map((r) => r.quote_time))
         },
         fetchedAt: new Date().toISOString()
     }

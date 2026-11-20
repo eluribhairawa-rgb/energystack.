@@ -27,16 +27,27 @@ export async function sendMagicLinkCode(event: H3Event, email: string): Promise<
 
   const code = result.ChallengeParameters?.code
   if (!result.Session || !code) {
-    return { session: result.Session }
+    // Previously a silent return: the user got no email and no error.
+    console.error('[otp] CUSTOM_AUTH returned no Session/code; check the CreateAuthChallenge Lambda publicChallengeParameters', {
+      challengeName: result.ChallengeName,
+      hasSession: !!result.Session,
+      paramKeys: Object.keys(result.ChallengeParameters || {})
+    })
+    throw createError({ statusCode: 502, statusMessage: 'Could not generate a sign-in link. Please try again.' })
   }
 
-  let origin = getRequestURL(event).origin
-  const host = getHeader(event, 'host') || ''
-  if (host.includes('localhost') || host.includes('127.0.0.1')) {
-    origin = 'http://localhost:3000'
+  // Prefer an explicit public site URL: behind CloudFront/ALB the request's
+  // own host/protocol is often the internal one, which yields a dead link.
+  let origin = (config.public.siteUrl as string | undefined)?.replace(/\/+$/, '')
+  if (!origin) {
+    origin = getRequestURL(event, { xForwardedHost: true, xForwardedProto: true }).origin
+    const host = getHeader(event, 'host') || ''
+    if (host.includes('localhost') || host.includes('127.0.0.1')) {
+      origin = 'http://localhost:3000'
+    }
   }
 
-  const link = `${origin}/auth/callback?email=${encodeURIComponent(email)}&code=${code}&session=${encodeURIComponent(result.Session)}`
+  const link = `${origin}/auth/callback?email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}&session=${encodeURIComponent(result.Session)}`
 
   await sendEmail({
     to: email,

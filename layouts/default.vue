@@ -74,6 +74,8 @@ const clearToasts = () => {
 
         <slot />
       </main>
+
+      <AppFooter />
     </div>
 
     <BottomNav />

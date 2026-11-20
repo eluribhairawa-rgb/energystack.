@@ -208,6 +208,7 @@ import { useAuthStore } from '~/stores/auth'
 
 const props = withDefaults(defineProps<{
   modelValue: boolean
+  initialEmail?: string
   subscriptionType?: 'news' | 'job' | 'event' | 'stock',
   allowTypeSelection?: boolean,
   availableSubscriptionTypes?: Array<'news' | 'job' | 'event' | 'stock'>,
@@ -226,6 +227,7 @@ const props = withDefaults(defineProps<{
     eventTypes: string[]
   }
 }>(), {
+  initialEmail: '',
   subscriptionType: 'news',
   allowTypeSelection: false,
   availableSubscriptionTypes: () => ['news', 'job', 'event', 'stock'],
@@ -461,6 +463,8 @@ watch(
   async (isOpen) => {
     if (!isOpen) return
     await initializeDialog()
+    // Prefill from the homepage signup module (QA M4) when not signed in
+    if (props.initialEmail && !email.value) email.value = props.initialEmail
   },
   { immediate: true }
 )

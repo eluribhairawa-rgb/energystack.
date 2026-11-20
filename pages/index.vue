@@ -47,6 +47,7 @@
 
     <SubscribeDialog 
       v-model="showSubscribeDialog" 
+      :initial-email="signupEmail"
       @subscribed="muteSubscribe" 
     />
 
@@ -60,6 +61,30 @@
         class="w-full pl-9 pr-4 py-2 rounded-full border border-gray-200 text-sm focus:outline-none focus:border-gray-400"
       />
     </div>
+
+    <!-- Email signup module (QA M4) -->
+    <form
+      @submit.prevent="submitSignup"
+      class="my-3 rounded-2xl bg-gray-50 border border-gray-100 p-4 flex flex-col sm:flex-row sm:items-center gap-3"
+    >
+      <div class="flex-grow">
+        <p class="text-sm font-bold">Get the daily energy briefing</p>
+        <p class="text-xs text-gray-500">News summaries in your inbox. Free, unsubscribe any time.</p>
+      </div>
+      <div class="flex gap-2">
+        <input
+          v-model="signupEmail"
+          type="email"
+          required
+          placeholder="your@email.com"
+          aria-label="Email address"
+          class="w-full sm:w-56 px-4 py-2 rounded-full border border-gray-200 text-sm focus:outline-none focus:border-gray-400"
+        />
+        <button type="submit" class="px-5 py-2 bg-black text-white rounded-full text-sm font-bold hover:bg-gray-800 transition-colors cursor-pointer whitespace-nowrap">
+          Subscribe
+        </button>
+      </div>
+    </form>
 
     <!-- Tag Filters -->
     <div class="mb-3 space-y-2.5 py-1">
@@ -409,6 +434,11 @@ function handleStartListening() {
 function muteSubscribe() {
   showSubscribeMini.value = false
   sessionStorage.setItem('subscribe_muted', 'true')
+}
+const signupEmail = ref('')
+function submitSignup() {
+  showSubscribeMini.value = false
+  showSubscribeDialog.value = true
 }
 function openSubscribe() {
   showSubscribeMini.value = false
