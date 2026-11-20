@@ -19,6 +19,8 @@ export default defineNuxtConfig({
       // Feature flag: Cognito passwordless/magic-link login is NOT implemented yet
       // (no CUSTOM_CHALLENGE Lambda trigger wired to the pool — see MIGRATION_NOTES.md).
       // Keep false until that Lambda exists; the password flow is fully supported.
+      // Public origin used in emailed magic links, e.g. https://energystacks.ai
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL,
       enableOtpLogin: process.env.NUXT_PUBLIC_ENABLE_OTP_LOGIN === 'true',
       // Base URL for news/media assets, served from S3 via CloudFront. Must
       // be NUXT_PUBLIC_-prefixed (not just ASSETS_BASE_URL) — Nuxt/Nitro only
