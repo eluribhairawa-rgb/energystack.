@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>EnergyStacks — Desktop</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F5F1}
+a{color:#0E1111}a:hover{color:#3A403A}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #0E1111;outline-offset:2px}
+.row-hover:hover{background:#FAFBF7}
+.clamp1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F4F5F1; font-family: Inter, system-ui, sans-serif; color: #0E1111; display: flex; flex-direction: column">
+
+  <!-- ===== Top bar ===== -->
+  <header style="background: #0E1111; color: #FFFFFF; position: sticky; top: 0; z-index: 20">
+    <div style="max-width: 1280px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; gap: 24px; min-height: 68px; flex-wrap: wrap">
+      <a href="#" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #FFFFFF">
+        <span style="width: 28px; height: 28px; border-radius: 8px; background: #C6F135; display: flex; align-items: center; justify-content: center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0E1111" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7l8-4 8 4-8 4-8-4z"></path><path d="M4 12l8 4 8-4"></path><path d="M4 17l8 4 8-4"></path></svg>
+        </span>
+        <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -0.02em">energystacks</span>
+      </a>
+      <nav aria-label="Primary" style="display: flex; gap: 4px; flex-wrap: wrap; flex: 1 1 auto">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+          <button type="button" onClick="{{t.go}}" style="{{t.style}}">{{t.label}}</button>
+        </sc-for>
+      </nav>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <button type="button" aria-label="Text size" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #2C322C; background: transparent; color: #FFFFFF; font-weight: 600; font-size: 14px">Aa</button>
+        <button type="button" onClick="{{playBrief}}" style="height: 40px; padding: 0 16px; border-radius: 10px; border: 0; background: #C6F135; color: #0E1111; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 14v-2a9 9 0 0118 0v2"></path><path d="M21 15a2 2 0 01-2 2h-1v-5h1a2 2 0 012 2z"></path><path d="M3 15a2 2 0 002 2h1v-5H5a2 2 0 00-2 2z"></path></svg>
+          Daily brief · 3 min
+        </button>
+        <button type="button" onClick="{{goSubscribe}}" style="height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #3A403A; background: transparent; color: #FFFFFF; font-weight: 600; font-size: 14px">Subscribe</button>
+        <button type="button" aria-label="Account" style="width: 40px; height: 40px; border-radius: 999px; border: 1px solid #3A403A; background: #1B201B; color: #FFFFFF; display: flex; align-items: center; justify-content: center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0116 0"></path></svg>
+        </button>
+      </div>
+    </div>
+    <!-- ticker -->
+    <div style="border-top: 1px solid #222822; background: #131813">
+      <div style="max-width: 1280px; margin: 0 auto; padding: 0 24px; display: flex; gap: 28px; min-height: 38px; align-items: center; overflow-x: auto; font-size: 13px">
+        <span style="display: flex; align-items: center; gap: 6px; color: #C6F135; font-weight: 600; white-space: nowrap"><span style="width: 7px; height: 7px; border-radius: 99px; background: #C6F135"></span>LIVE</span>
+        <sc-for list="{{ticker}}" as="k" hint-placeholder-count="4">
+          <span style="display: flex; gap: 8px; white-space: nowrap">
+            <span style="color: #A7AEA7">{{k.name}}</span>
+            <span style="font-family: 'JetBrains Mono', monospace; color: #FFFFFF">{{k.val}}</span>
+            <span style="font-family: 'JetBrains Mono', monospace; color: #8BE37A">{{k.chg}}</span>
+          </span>
+        </sc-for>
+        <span style="margin-left: auto; color: #A7AEA7; white-space: nowrap">Tue, Nov 10, 2026 · Good morning</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="flex: 1 1 auto; width: 100%; max-width: 1280px; margin: 0 auto; padding: 32px 24px 120px; box-sizing: border-box">
+
+    <!-- ===================== NEWS ===================== -->
+    <sc-if value="{{isNews}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start">
+        <section style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+          <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+            <div>
+              <p style="margin: 0 0 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; color: #5B615B">TODAY’S ENERGY INTELLIGENCE</p>
+              <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 40px; line-height: 1.1; letter-spacing: -0.02em">Your energy briefing</h1>
+            </div>
+            <label style="display: flex; align-items: center; gap: 10px; background: #FFFFFF; border: 1px solid #DDE0D8; border-radius: 12px; padding: 0 14px; height: 46px; flex: 0 1 340px; min-width: 220px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B615B" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+              <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Search news</span>
+              <input type="search" placeholder="Search headlines, companies, regions" value="{{q}}" onChange="{{onSearch}}" style="border: 0; outline: none; background: transparent; font-size: 15px; flex: 1 1 auto; min-width: 0; color: #0E1111">
+            </label>
+          </div>
+
+          <!-- filters -->
+          <div style="display: flex; flex-direction: column; gap: 12px">
+            <div role="group" aria-label="Value chain" style="display: inline-flex; flex-wrap: wrap; gap: 4px; background: #E9EBE4; padding: 4px; border-radius: 12px; align-self: flex-start">
+              <sc-for list="{{sectors}}" as="sx" hint-placeholder-count="5">
+                <button type="button" onClick="{{sx.pick}}" style="{{sx.style}}">{{sx.label}}</button>
+              </sc-for>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+              <span style="font-size: 13px; color: #5B615B; margin-right: 4px">Topics</span>
+              <sc-for list="{{topics}}" as="tp" hint-placeholder-count="10">
+                <button type="button" onClick="{{tp.pick}}" aria-pressed="{{tp.pressed}}" style="{{tp.style}}">{{tp.label}}</button>
+              </sc-for>
+              <sc-if value="{{hasFilters}}" hint-placeholder-val="{{ false }}">
+                <button type="button" onClick="{{clearAll}}" style="border: 0; background: transparent; font-size: 13px; font-weight: 600; color: #0E1111; text-decoration: underline; padding: 6px 8px">Clear all</button>
+              </sc-if>
+            </div>
+          </div>
+
+          <!-- featured -->
+          <sc-if value="{{hasFeatured}}" hint-placeholder-val="{{ true }}">
+            <article style="background: #0E1111; color: #FFFFFF; border-radius: 20px; padding: 28px; display: flex; gap: 28px; flex-wrap: wrap; align-items: stretch">
+              <div style="flex: 1 1 260px; min-height: 200px; border-radius: 14px; background: #1B201B; display: flex; align-items: flex-end; padding: 18px; box-sizing: border-box; position: relative; overflow: hidden">
+                <svg viewBox="0 0 300 160" preserveAspectRatio="none" style="position: absolute; inset: 0; width: 100%; height: 100%; color: #C6F135; opacity: 0.55" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M0 120 C 50 80, 90 140, 150 100 S 250 60, 300 90"></path><path d="M0 135 C 60 100, 100 150, 160 115 S 250 80, 300 110" opacity="0.6"></path><path d="M0 150 C 70 120, 110 160, 170 130 S 250 100, 300 128" opacity="0.35"></path><path d="M40 160 V 60 M 80 160 V 40 M 120 160 V 70 M 220 160 V 30 M 260 160 V 55" opacity="0.25"></path></svg>
+                <span style="position: relative; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; background: #C6F135; color: #0E1111; padding: 4px 8px; border-radius: 6px">TOP STORY</span>
+              </div>
+              <div style="flex: 2 1 320px; display: flex; flex-direction: column; gap: 14px; justify-content: center">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                  <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #C6F135">{{featured.sectorUp}}</span>
+                  <span style="font-size: 12px; color: #A7AEA7">· {{featured.topic}} · {{featured.date}}</span>
+                </div>
+                <h2 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 30px; line-height: 1.2; letter-spacing: -0.01em">{{featured.title}}</h2>
+                <p style="margin: 0; color: #C9CEC9; font-size: 15px; line-height: 1.55">AI-generated summary · {{featured.dur}} listen. Tap play to hear the briefing, or open the full story from the source.</p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px">
+                  <button type="button" onClick="{{featured.play}}" style="height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #C6F135; color: #0E1111; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4l13 8-13 8z"></path></svg>
+                    Listen · {{featured.dur}}
+                  </button>
+                  <a href="#" style="height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid #3A403A; color: #FFFFFF; font-weight: 600; font-size: 14px; display: flex; align-items: center; text-decoration: none">Read summary</a>
+                </div>
+              </div>
+            </article>
+          </sc-if>
+
+          <!-- list -->
+          <div style="background: #FFFFFF; border: 1px solid #E2E5DD; border-radius: 20px; overflow: hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; border-bottom: 1px solid #ECEEE8">
+              <h2 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 18px">Latest</h2>
+              <span style="font-size: 13px; color: #5B615B">{{countLabel}}</span>
+            </div>
+            <sc-for list="{{rest}}" as="n" hint-placeholder-count="4">
+              <article class="row-hover" style="display: flex; gap: 18px; align-items: center; padding: 18px 22px; border-bottom: 1px solid #ECEEE8">
+                <div style="{{n.thumbStyle}}">
+                  <svg viewBox="0 0 80 80" width="44" height="44" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 56 C 22 40, 34 62, 48 46 S 68 34, 72 40"></path><path d="M8 66 C 24 54, 36 70, 50 58 S 66 50, 72 54" opacity="0.5"></path></svg>
+                </div>
+                <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+                  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+                    <span style="{{n.pillStyle}}">{{n.sector}}</span>
+                    <span style="font-size: 12px; color: #5B615B">{{n.topic}}</span>
+                  </div>
+                  <h3 style="margin: 0; font-size: 17px; line-height: 1.35; font-weight: 600">{{n.title}}</h3>
+                  <div style="display: flex; gap: 12px; font-size: 13px; color: #5B615B">
+                    <span>{{n.date}}</span><span>·</span><span>{{n.dur}} listen</span>
+                  </div>
+                </div>
+                <button type="button" aria-label="Save story" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #DDE0D8; background: #FFFFFF; color: #0E1111; display: flex; align-items: center; justify-content: center">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"></path></svg>
+                </button>
+                <button type="button" onClick="{{n.play}}" aria-label="{{n.playLabel}}" style="{{n.playStyle}}">
+                  <sc-if value="{{n.isPlaying}}" hint-placeholder-val="{{ false }}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{n.notPlaying}}" hint-placeholder-val="{{ true }}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4l13 8-13 8z"></path></svg>
+                  </sc-if>
+                </button>
+              </article>
+            </sc-for>
+            <sc-if value="{{noResults}}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 48px 22px; text-align: center; color: #5B615B">
+                <p style="margin: 0 0 12px; font-size: 16px; color: #0E1111; font-weight: 600">No stories match these filters</p>
+                <button type="button" onClick="{{clearAll}}" style="height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid #0E1111; background: #FFFFFF; font-weight: 600">Reset filters</button>
+              </div>
+            </sc-if>
+          </div>
+        </section>
+
+        <!-- right rail -->
+        <aside style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+          <div style="background: #FFFFFF; border: 1px solid #E2E5DD; border-radius: 20px; padding: 20px">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px">
+              <h2 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 18px">Market snapshot</h2>
+              <button type="button" onClick="{{goMarkets}}" style="border: 0; background: transparent; font-size: 13px; font-weight: 600; text-decoration: underline; padding: 8px 0">All markets</button>
+            </div>
+            <sc-for list="{{commodities}}" as="c" hint-placeholder-count="3">
+              <div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid #ECEEE8">
+                <div style="flex: 1 1 auto; min-width: 0">
+                  <div style="font-weight: 600; font-size: 14px">{{c.name}}</div>
+                  <div style="font-size: 12px; color: #5B615B">{{c.code}}</div>
+                </div>
+                <svg viewBox="0 0 120 32" width="72" height="24" aria-hidden="true"><polyline points="{{c.pts}}" fill="none" stroke="#0A7A3B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></polyline></svg>
+                <div style="text-align: right">
+                  <div style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600">{{c.last}}</div>
+                  <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #0A7A3B">{{c.daily}}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="background: #FFFFFF; border: 1px solid #E2E5DD; border-radius: 20px; padding: 20px">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px">
+              <h2 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 18px">Happening today</h2>
+              <button type="button" onClick="{{goEvents}}" style="border: 0; background: transparent; font-size: 13px; font-weight: 600; text-decoration: underline; padding: 8px 0">Calendar</button>
+            </div>
+            <sc-for list="{{todayEvents}}" as="ev" hint-placeholder-count="3">
+              <div style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid #ECEEE8; align-items: flex-start">
+                <span style="{{ev.dotStyle}}"></span>
+                <div style="min-width: 0">
+                  <div style="font-size: 14px; font-weight: 600; line-height: 1.35">{{ev.title}}</div>
+                  <div style="font-size: 12px; color: #5B615B; margin-top: 2px">{{ev.type}}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div id="subscribe" style="background: #C6F135; border-radius: 20px; padding: 22px; display: flex; flex-direction: column; gap: 12px">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0E1111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+            <h2 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 22px; line-height: 1.2">The 6 AM energy brief, in your inbox</h2>
+            <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #1E241E">Daily summaries across upstream, midstream and downstream. Unsubscribe any time.</p>
+            <sc-if value="{{notSubscribed}}" hint-placeholder-val="{{ true }}">
+              <form style="display: flex; gap: 8px; flex-wrap: wrap" onSubmit="{{subscribe}}">
+                <label for="sub-email" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Work email</label>
+                <input id="sub-email" type="email" placeholder="you@company.com" style="flex: 1 1 160px; min-width: 0; height: 46px; border-radius: 10px; border: 1px solid #0E1111; padding: 0 12px; font-size: 14px; background: #FFFFFF">
+                <button type="submit" style="height: 46px; padding: 0 16px; border-radius: 10px; border: 0; background: #0E1111; color: #FFFFFF; font-weight: 600; font-size: 14px">Subscribe</button>
+              </form>
+            </sc-if>
+            <sc-if value="{{subscribed}}" hint-placeholder-val="{{ false }}">
+              <div style="background: #0E1111; color: #FFFFFF; border-radius: 10px; padding: 12px 14px; font-size: 14px; font-weight: 600">You’re in. First brief lands tomorrow at 6 AM.</div>
+            </sc-if>
+          </div>
+        </aside>
+      </div>
+    </sc-if>
+
+    <!-- ===================== MARKETS ===================== -->
+    <sc-if value="{{isMarkets}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 28px">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap">
+          <div>
+            <p style="margin: 0 0 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; color: #5B615B">ENERGY MARKETS</p>
+            <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 40px; line-height: 1.1; letter-spacing: -0.02em">Oil, gas, rigs &amp; majors</h1>
+          </div>
+          <span style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 999px; background: #FFFFFF; border: 1px solid #DDE0D8; font-size: 13px; font-weight: 600"><span style="width: 8px; height: 8px; border-radius: 99px; background: #0A7A3B"></span>Prices live · rig counts weekly</span>
+        </div>
+
+        <section aria-labelledby="rigs-h">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px">
+            <h2 id="rigs-h" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px">Rig counts</h2>
+            <span style="font-size: 13px; color: #5B615B">Source: Baker Hughes</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px">
+            <sc-for list="{{rigs}}" as="r" hint-placeholder-count="3">
+              <div style="background: #FFFFFF; border: 1px solid #E2E5DD; border-radius: 20px; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+                <div style="display: flex; justify-content: space-between; align-items: center">
+                  <span style="font-size: 14px; font-weight: 600">{{r.region}}</span>
+                  <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: #0A7A3B; background: #E3F5E8; padding: 4px 8px; border-radius: 6px">{{r.wow}} WoW</span>
+                </div>
+                <div style="font-family: 'Space Grotesk', sans-serif; font-size: 56px; font-weight: 600; line-height: 1; letter-spacing: -0.03em">{{r.count}}</div>
+                <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; border-top: 1px solid #ECEEE8; padding-top: 14px">
+                  <div><div style="font-size: 12px; color: #5B615B">vs last year</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 600; color: #0A7A3B">{{r.yoy}}</div></div>
+                  <div><div style="font-size: 12px; color: #5B615B">As of</div><div style="font-size: 15px; font-weight: 600">{{r.asof}}</div></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section aria-labelledby="com-h" style="background: #FFFFFF; border: 1px solid #E2E5DD; border-radius: 20px; overflow: hidden">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 20px 22px; flex-wrap: wrap">
+            <div>
+              <h2 id="com-h" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px">Oil, gas &amp; refined products</h2>
+              <p style="margin: 4px 0 0; font-size: 13px; color: #5B615B">Source: EIA + EIA backfill</p>
+            </div>
+            <div role="group" aria-label="History range" style="display: inline-flex; gap: 4px; background: #E9EBE4; padding: 4px; border-radius: 10px">
+              <sc-for list="{{ranges}}" as="rg" hint-placeholder-count="3">
+                <button type="button" onClick="{{rg.pick}}" style="{{rg.style}}">{{rg.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="overflow-x: auto">
+            <table style="width: 100%; border-collapse: collapse; min-width: 640px; font-size: 14px">
+              <thead>
+                <tr style="text-align: left; color: #5B615B; font-size: 12px; letter-spacing: 0.06em">
+                  <th style="padding: 12px 22px; font-weight: 600; border-top: 1px solid #ECEEE8">COMMODITY</th>
+                  <th style="padding: 12px; font-weight: 600; border-top: 1px solid #ECEEE8; text-align: right">LAST</th>
+                  <th style="padding: 12px; font-weight: 600; border-top: 1px solid #ECEEE8; text-align: right">DAILY</th>
+                  <th style="padding: 12px; font-weight: 600; border-top: 1px solid #ECEEE8; text-align: right">WEEKLY</th>
+                  <th style="padding: 12px 22px; font-weight: 600; border-top: 1px solid #ECEEE8">TREND</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{commodities}}" as="c" hint-placeholder-count="3">
+                  <tr class="row-hover">
+                    <td style="padding: 16px 22px; border-top: 1px solid #ECEEE8"><div style="font-weight: 600">{{c.name}}</div><div style="font-size: 12px; color: #5B615B; font-family: 'JetBrains Mono', monospace">{{c.code}}</div></td>
+                    <td style="padding: 16px 12px; border-top: 1px solid #ECEEE8; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 600">{{c.last}} <span style="color: #5B615B; font-weight: 500; font-size: 12px">{{c.unit}}</span></td>
+                    <td style="padding: 16px 12px; border-top: 1px solid #ECEEE8; text-align: right; font-family: 'JetBrains Mono', monospace; color: #0A7A3B; font-weight: 600">▲ {{c.daily}}</td>
+                    <td style="padding: 16px 12px; border-top: 1px solid #ECEEE8; text-align: right; font-family: 'JetBrains Mono', monospace; color: #0A7A3B; font-weight: 600">▲ {{c.weekly}}</td>
+                    <td style="padding: 16px 22px; border-top: 1px solid #ECEEE8"><svg viewBox="0 0 120 32" width="140" height="36" role="img" aria-label="{{c.trendLabel}}"><polyline points="{{c.pts}}" fill="none" stroke="#0A7A3B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></polyline></svg></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </sc-if>
+
+    <!-- ===================== JOBS ===================== -->
+    <sc-if value="{{isJobs}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 20px">
+        <div>
+          <p style="margin: 0 0 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; color: #5B615B">CAREERS IN ENERGY</p>
+          <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 40px; line-height: 1.1; letter-spacing: -0.02em">Find your next role</h1>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center">
+          <label style="display: flex; align-items: center; gap: 10px; background: #FFFFFF; border: 1px solid #DDE0D8; border-radius: 12px; padding: 0 14px; height: 46px; flex: 1 1 320px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B615B" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+            <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Search jobs</span>
+            <input type="search" placeholder="Job title, skill or company" value="{{jq}}" onChange="{{onJobSearch}}" style="border: 0; outline: none; background: transparent; font-size: 15px; flex: 1 1 auto; min-width: 0">
+          </label>
+          <button type="button" style="height: 46px; padding: 0 16px; border-radius: 12px; border: 1px solid #DDE0D8; background: #FFFFFF; font-size: 14px; font-weight: 500">Category ▾</button>
+          <button type="button" style="height: 46px; padding: 0 16px; border-radius: 12px; border: 1px solid #DDE0D8; background: #FFFFFF; font-size: 14px; font-weight: 500">Location ▾</button>
+          <button type="button" style="height: 46px; padding: 0 16px; border-radius: 12px; border: 1px solid #DDE0D8; background: #FFFFFF; font-size: 14px; font-weight: 500">Company ▾</button>
+        </div>
+        <div role="group" aria-label="Seniority" style="display: flex; gap: 8px; flex-wrap: wrap">
+          <sc-for list="{{levels}}" as="lv" hint-placeholder-count="4">
+            <button type="button" onClick="{{lv.pick}}" style="{{lv.style}}">{{lv.label}}</button>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start">
+          <div style="flex: 999 1 520px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E5DD; border-radius: 20px; overflow: hidden">
+            <div style="padding: 16px 20px; font-size: 13px; color: #5B615B; border-bottom: 1px solid #ECEEE8">{{jobCount}}</div>
+            <sc-for list="{{jobs}}" as="j" hint-placeholder-count="6">
+              <button type="button" onClick="{{j.pick}}" style="{{j.style}}">
+                <span style="width: 48px; height: 48px; border-radius: 12px; background: #EAF6E2; color: #0A6B2E; font-weight: 700; font-family: 'Space Grotesk', sans-serif; font-size: 16px; display: flex; align-items: center; justify-content: center; flex: 0 0 auto">bp</span>
+                <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; text-align: left">
+                  <span style="font-size: 16px; font-weight: 600; color: #0E1111">{{j.title}}</span>
+                  <span style="font-size: 13px; color: #5B615B">bp · {{j.loc}}</span>
+                  <span style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px">
+                    <span style="font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #F0F1EC; color: #3A403A">{{j.cat}}</span>
+                    <span style="font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #F0F1EC; color: #3A403A">{{j.level}}</span>
+                    <span style="font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #F0F1EC; color: #3A403A">{{j.type}}</span>
+                  </span>
+                </span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0E1111" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+              </button>
+            </sc-for>
+          </div>
+          <aside style="flex: 1 1 340px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E5DD; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 16px; position: sticky; top: 130px">
+            <div style="display: flex; gap: 14px; align-items: center">
+              <span style="width: 56px; height: 56px; border-radius: 14px; background: #EAF6E2; color: #0A6B2E; font-weight: 700; font-family: 'Space Grotesk', sans-serif; font-size: 18px; display: flex; align-items: center; justify-content: center">bp</span>
+              <div>
+                <div style="font-size: 13px; color: #5B615B">bp</div>
+                <h2 style="margin: 2px 0 0; font-family: 'Space Grotesk', sans-serif; font-size: 24px; line-height: 1.2">{{job.title}}</h2>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+              <div style="background: #F6F7F3; border-radius: 12px; padding: 12px"><div style="font-size: 12px; color: #5B615B">Location</div><div style="font-size: 14px; font-weight: 600; margin-top: 2px">{{job.loc}}</div></div>
+              <div style="background: #F6F7F3; border-radius: 12px; padding: 12px"><div style="font-size: 12px; color: #5B615B">Seniority</div><div style="font-size: 14px; font-weight: 600; margin-top: 2px">{{job.level}}</div></div>
+              <div style="background: #F6F7F3; border-radius: 12px; padding: 12px"><div style="font-size: 12px; color: #5B615B">Category</div><div style="font-size: 14px; font-weight: 600; margin-top: 2px">{{job.cat}}</div></div>
+              <div style="background: #F6F7F3; border-radius: 12px; padding: 12px"><div style="font-size: 12px; color: #5B615B">Type</div><div style="font-size: 14px; font-weight: 600; margin-top: 2px">{{job.type}}</div></div>
+            </div>
+            <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #3A403A">[Role summary pulled from the employer listing — 2–3 lines of responsibilities and requirements.]</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap">
+              <a href="#" style="flex: 1 1 auto; height: 48px; border-radius: 12px; background: #0E1111; color: #FFFFFF; font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none">Apply on bp careers ↗</a>
+              <button type="button" onClick="{{toggleSave}}" style="{{saveStyle}}">{{saveLabel}}</button>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===================== EVENTS ===================== -->
+    <sc-if value="{{isEvents}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap">
+          <div>
+            <p style="margin: 0 0 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; color: #5B615B">CONFERENCE CALENDAR</p>
+            <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 40px; line-height: 1.1; letter-spacing: -0.02em">November 2026</h1>
+          </div>
+          <div style="display: flex; gap: 8px">
+            <button type="button" aria-label="Previous month" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #DDE0D8; background: #FFFFFF">‹</button>
+            <button type="button" onClick="{{goToday}}" style="height: 44px; padding: 0 16px; border-radius: 12px; border: 0; background: #0E1111; color: #FFFFFF; font-weight: 600">Today</button>
+            <button type="button" aria-label="Next month" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #DDE0D8; background: #FFFFFF">›</button>
+          </div>
+        </div>
+        <div role="group" aria-label="Event type" style="display: flex; gap: 8px; flex-wrap: wrap">
+          <sc-for list="{{evTypes}}" as="et" hint-placeholder-count="6">
+            <button type="button" onClick="{{et.pick}}" style="{{et.style}}"><span style="{{et.dot}}"></span>{{et.label}}</button>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start">
+          <div style="flex: 999 1 560px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E5DD; border-radius: 20px; padding: 18px">
+            <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-bottom: 6px">
+              <sc-for list="{{dows}}" as="d" hint-placeholder-count="7">
+                <div style="text-align: center; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #5B615B; padding: 6px 0">{{d}}</div>
+              </sc-for>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px">
+              <sc-for list="{{cells}}" as="cl" hint-placeholder-count="42">
+                <button type="button" onClick="{{cl.pick}}" aria-label="{{cl.aria}}" style="{{cl.style}}">
+                  <span style="{{cl.numStyle}}">{{cl.n}}</span>
+                  <span style="display: flex; gap: 3px; flex-wrap: wrap">
+                    <sc-for list="{{cl.dots}}" as="dt" hint-placeholder-count="0">
+                      <span style="{{dt}}"></span>
+                    </sc-for>
+                  </span>
+                  <span style="font-size: 11px; color: #3A403A; text-align: left; line-height: 1.3" class="clamp1">{{cl.first}}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+          <aside style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+            <h2 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px">{{dayLabel}}</h2>
+            <sc-for list="{{dayEvents}}" as="ev" hint-placeholder-count="3">
+              <div style="background: #FFFFFF; border: 1px solid #E2E5DD; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+                <span style="{{ev.pill}}">{{ev.type}}</span>
+                <div style="font-size: 16px; font-weight: 600; line-height: 1.35">{{ev.title}}</div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                  <button type="button" style="height: 40px; padding: 0 14px; border-radius: 10px; border: 0; background: #0E1111; color: #FFFFFF; font-weight: 600; font-size: 13px">Add to calendar</button>
+                  <a href="#" style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #DDE0D8; color: #0E1111; font-weight: 600; font-size: 13px; display: flex; align-items: center; text-decoration: none">Details ↗</a>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{noDayEvents}}" hint-placeholder-val="{{ false }}">
+              <div style="background: #FFFFFF; border: 1px dashed #C9CDC3; border-radius: 16px; padding: 24px; text-align: center; color: #5B615B; font-size: 14px">No events on this day. Pick a date with a dot.</div>
+            </sc-if>
+          </aside>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===================== MORE ===================== -->
+    <sc-if value="{{isMore}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 24px">
+        <div>
+          <p style="margin: 0 0 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; color: #5B615B">ON THE ROADMAP</p>
+          <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 40px; line-height: 1.1; letter-spacing: -0.02em">More from EnergyStacks</h1>
+          <p style="margin: 10px 0 0; font-size: 16px; color: #3A403A; max-width: 560px; line-height: 1.5">Four new formats are in the works. Tell us which you want first — we’ll notify you when it ships.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px">
+          <sc-for list="{{moreItems}}" as="m" hint-placeholder-count="4">
+            <div style="background: #FFFFFF; border: 1px solid #E2E5DD; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 14px; min-height: 220px">
+              <span style="align-self: flex-start; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 6px; background: #F0F1EC; color: #3A403A">COMING SOON</span>
+              <h2 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 26px">{{m.name}}</h2>
+              <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #3A403A; flex: 1 1 auto">{{m.desc}}</p>
+              <button type="button" onClick="{{m.toggle}}" aria-pressed="{{m.pressed}}" style="{{m.style}}">{{m.label}}</button>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+  </main>
+
+  <!-- now playing -->
+  <sc-if value="{{hasPlaying}}" hint-placeholder-val="{{ false }}">
+    <div style="position: sticky; bottom: 0; z-index: 30; padding: 0 24px 20px">
+      <div role="region" aria-label="Now playing" style="max-width: 900px; margin: 0 auto; background: #0E1111; color: #FFFFFF; border-radius: 16px; padding: 12px 16px; display: flex; align-items: center; gap: 14px; box-shadow: 0 12px 32px rgba(14,17,17,0.25); flex-wrap: wrap">
+        <button type="button" onClick="{{stop}}" aria-label="Pause" style="width: 44px; height: 44px; border-radius: 999px; border: 0; background: #C6F135; color: #0E1111; display: flex; align-items: center; justify-content: center; flex: 0 0 auto">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"></path></svg>
+        </button>
+        <div style="flex: 1 1 240px; min-width: 0">
+          <div style="font-size: 12px; color: #A7AEA7">Now playing · {{playing.dur}}</div>
+          <div class="clamp1" style="font-size: 14px; font-weight: 600">{{playing.title}}</div>
+          <div style="height: 4px; background: #2C322C; border-radius: 99px; margin-top: 8px"><div style="width: 32%; height: 4px; background: #C6F135; border-radius: 99px"></div></div>
+        </div>
+        <button type="button" style="height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #3A403A; background: transparent; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; font-size: 13px">1.0×</button>
+        <button type="button" onClick="{{stop}}" aria-label="Close player" style="width: 36px; height: 36px; border-radius: 8px; border: 0; background: transparent; color: #FFFFFF; font-size: 18px">×</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1760}}'>
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    this.state = { tab: 'news', sector: 'All', topics: {}, q: '', playing: null, subscribed: false, range: '1M', level: 'All', jq: '', job: 'j1', saved: {}, day: 10, evType: 'All', notify: {} };
+  }
+  renderVals() {
+    const s = this.state;
+    const set = (o) => this.setState(o);
+    const ink = '#0E1111';
+    const SECT = {
+      'Upstream': { fg: '#1D4ED8', bg: '#E6EDFF' },
+      'Midstream': { fg: '#6D28D9', bg: '#F0E9FF' },
+      'Downstream': { fg: '#B45309', bg: '#FFF1E0' },
+      'Cross chain': { fg: '#0F766E', bg: '#DFF4F0' }
+    };
+    const NEWS = [
+      { id: 'n1', sector: 'Downstream', topic: 'Technology', fuel: 'Oil', title: 'New Membrane Technology Promises Major Energy Savings in Oil Refining by 2026', date: 'Nov 9, 2026', dur: '35s' },
+      { id: 'n2', sector: 'Midstream', topic: 'Business', fuel: 'Oil', title: 'NABEP Advances Major Pipeline Overhaul in Lake Maracaibo to Boost Efficiency and Environmental Safety', date: 'Nov 9, 2026', dur: '34s' },
+      { id: 'n3', sector: 'Cross chain', topic: 'Geopolitical', fuel: '', title: 'Europe Eyes Ukraine and Balkans for Strategic Raw Materials to Strengthen Supply Chains', date: 'Nov 9, 2026', dur: '34s' },
+      { id: 'n4', sector: 'Upstream', topic: 'Business', fuel: 'Oil', title: 'ADNOC Drilling Secures $313.6M Offshore Rig Contracts in Kuwait', date: 'Nov 9, 2026', dur: '30s' },
+      { id: 'n5', sector: 'Cross chain', topic: 'Technology', fuel: 'Natural Gas', title: 'Tech Giants’ Power Demand Challenges U.S. Utilities Amid Data Center Boom', date: 'Nov 9, 2026', dur: '32s' }
+    ];
+    const tabsDef = [['news', 'News'], ['markets', 'Markets'], ['jobs', 'Jobs'], ['events', 'Events'], ['more', 'More']];
+    const tabs = tabsDef.map(([id, label]) => ({
+      label, go: () => set({ tab: id }),
+      style: 'height: 40px; padding: 0 16px; border-radius: 10px; border: 0; font-size: 14px; font-weight: 600; ' + (s.tab === id ? 'background: #FFFFFF; color: #0E1111;' : 'background: transparent; color: #C9CEC9;')
+    }));
+    const ticker = [
+      { name: 'WTI', val: '$107.02', chg: '+4.49%' },
+      { name: 'Brent', val: '$130.80', chg: '+7.88%' },
+      { name: 'Henry Hub', val: '$2.97', chg: '+4.21%' },
+      { name: 'US rigs', val: '588', chg: '+1' },
+      { name: 'Intl rigs', val: '1,102', chg: '+6' }
+    ];
+    // news filtering
+    const sectors = ['All', 'Upstream', 'Midstream', 'Downstream', 'Cross chain'].map((x) => ({
+      label: x, pick: () => set({ sector: x }),
+      style: 'height: 36px; padding: 0 14px; border-radius: 9px; border: 0; font-size: 14px; font-weight: 600; ' + (s.sector === x ? 'background: #0E1111; color: #FFFFFF;' : 'background: transparent; color: #3A403A;')
+    }));
+    const topicNames = ['Business', 'Technology', 'Geopolitical', 'Oil', 'Natural Gas', 'LNG', 'Renewables', 'Hydrogen', 'Carbon', 'Nuclear'];
+    const topics = topicNames.map((x) => {
+      const on = !!s.topics[x];
+      return {
+        label: x, pressed: on ? 'true' : 'false',
+        pick: () => set({ topics: Object.assign({}, s.topics, { [x]: !on }) }),
+        style: 'height: 34px; padding: 0 12px; border-radius: 999px; font-size: 13px; font-weight: 500; ' + (on ? 'background: #C6F135; border: 1px solid #0E1111; color: #0E1111;' : 'background: #FFFFFF; border: 1px solid #DDE0D8; color: #3A403A;')
+      };
+    });
+    const activeTopics = topicNames.filter((x) => s.topics[x]);
+    const q = (s.q || '').toLowerCase();
+    const filtered = NEWS.filter((n) =>
+      (s.sector === 'All' || n.sector === s.sector) &&
+      (activeTopics.length === 0 || activeTopics.indexOf(n.topic) >= 0 || activeTopics.indexOf(n.fuel) >= 0) &&
+      (!q || n.title.toLowerCase().indexOf(q) >= 0)
+    );
+    const decorate = (n) => {
+      const c = SECT[n.sector];
+      const playingThis = s.playing && s.playing.id === n.id;
+      return Object.assign({}, n, {
+        sectorUp: n.sector.toUpperCase(),
+        isPlaying: !!playingThis, notPlaying: !playingThis,
+        playLabel: playingThis ? 'Pause' : 'Play summary',
+        play: () => set({ playing: playingThis ? null : n }),
+        thumbStyle: 'width: 88px; height: 72px; border-radius: 12px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; background: ' + c.bg + '; color: ' + c.fg + ';',
+        pillStyle: 'font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; background: ' + c.bg + '; color: ' + c.fg + ';',
+        playStyle: 'width: 44px; height: 44px; border-radius: 999px; border: 0; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; ' + (playingThis ? 'background: #C6F135; color: #0E1111;' : 'background: #0E1111; color: #FFFFFF;')
+      });
+    };
+    const list = filtered.map(decorate);
+    const featured = list[0] || {};
+    const rest = list.slice(1);
+    // markets
+    const SER = {
+      '1W': ['0,24 20,25 40,23 60,22 80,23 100,14 120,6', '0,24 20,23 40,24 60,22 80,24 100,16 120,4', '0,26 20,18 40,22 60,20 80,24 100,12 120,8'],
+      '1M': ['0,26 15,27 30,25 45,24 60,25 75,20 90,16 105,10 120,4', '0,26 15,25 30,26 45,24 60,25 75,22 90,16 105,10 120,3', '0,20 15,28 30,22 45,23 60,19 75,26 90,16 105,20 120,10'],
+      '3M': ['0,18 15,22 30,20 45,26 60,24 75,22 90,18 105,10 120,4', '0,20 15,22 30,24 45,27 60,24 75,20 90,15 105,9 120,3', '0,14 15,18 30,24 45,20 60,26 75,22 90,18 105,22 120,12']
+    };
+    const pts = SER[s.range];
+    const commodities = [
+      { name: 'WTI Crude Oil', code: 'CL1!', last: '$107.02', unit: '/ bbl', daily: '+4.49%', weekly: '+13.60%', pts: pts[0], trendLabel: 'WTI trending up' },
+      { name: 'Brent Crude Oil', code: 'BZ1!', last: '$130.80', unit: '/ bbl', daily: '+7.88%', weekly: '+23.26%', pts: pts[1], trendLabel: 'Brent trending up' },
+      { name: 'Natural Gas', code: 'NG1!', last: '$2.97', unit: '/ MMBtu', daily: '+4.21%', weekly: '+2.41%', pts: pts[2], trendLabel: 'Natural gas volatile, slightly up' }
+    ];
+    const ranges = ['1W', '1M', '3M'].map((x) => ({
+      label: x, pick: () => set({ range: x }),
+      style: 'height: 34px; padding: 0 14px; border-radius: 7px; border: 0; font-size: 13px; font-weight: 600; ' + (s.range === x ? 'background: #FFFFFF; color: #0E1111;' : 'background: transparent; color: #3A403A;')
+    }));
+    const rigs = [
+      { region: 'United States', count: '588', wow: '+1', yoy: '+48', asof: 'Jul 31, 2026' },
+      { region: 'Canada', count: '219', wow: '+15', yoy: '+42', asof: 'Jul 31, 2026' },
+      { region: 'International', count: '1,102', wow: '+6', yoy: '+26', asof: 'Aug 1, 2026' }
+    ];
+    // jobs
+    const JOBS = [
+      { id: 'j1', title: 'Business Improvement Manager', loc: 'Southwark, UK', level: 'Mid', cat: 'Operations', type: 'Full-time' },
+      { id: 'j2', title: 'Category Executive', loc: 'Docklands, Australia', level: 'Mid', cat: 'Operations', type: 'Full-time' },
+      { id: 'j3', title: 'Degree Apprenticeship', loc: 'London, UK', level: 'Entry', cat: 'Operations', type: 'Full-time' },
+      { id: 'j4', title: 'Discovery Week Participant', loc: 'Baku, Azerbaijan', level: 'Entry', cat: 'General', type: 'Internship' },
+      { id: 'j5', title: 'Enterprise Technology Engineer', loc: 'Sunbury, United Kingdom', level: 'Senior', cat: 'IT', type: 'Full-time' },
+      { id: 'j6', title: 'Food Technologist', loc: 'Docklands, Australia', level: 'Entry', cat: 'Operations', type: 'Full-time' }
+    ];
+    const levels = ['All', 'Entry', 'Mid', 'Senior'].map((x) => ({
+      label: x === 'All' ? 'All levels' : x, pick: () => set({ level: x }),
+      style: 'height: 36px; padding: 0 14px; border-radius: 999px; font-size: 13px; font-weight: 600; ' + (s.level === x ? 'background: #0E1111; color: #FFFFFF; border: 1px solid #0E1111;' : 'background: #FFFFFF; color: #3A403A; border: 1px solid #DDE0D8;')
+    }));
+    const jq = (s.jq || '').toLowerCase();
+    const jobsF = JOBS.filter((j) => (s.level === 'All' || j.level === s.level) && (!jq || (j.title + ' ' + j.loc + ' bp').toLowerCase().indexOf(jq) >= 0));
+    const jobs = jobsF.map((j) => Object.assign({}, j, {
+      pick: () => set({ job: j.id }),
+      style: 'width: 100%; display: flex; gap: 16px; align-items: center; padding: 18px 20px; border: 0; border-bottom: 1px solid #ECEEE8; border-left: 3px solid ' + (s.job === j.id ? '#0E1111' : 'transparent') + '; background: ' + (s.job === j.id ? '#F6F9EA' : '#FFFFFF') + ';'
+    }));
+    const job = JOBS.find((j) => j.id === s.job) || JOBS[0];
+    const isSaved = !!s.saved[job.id];
+    // events
+    const TYPEC = { Conference: '#1D4ED8', Workshop: '#B45309', Training: '#6D28D9', Forum: '#0F766E', Symposium: '#BE185D' };
+    const EVENTS = [
+      { day: 2, title: 'ADIPEC', type: 'Conference' },
+      { day: 2, title: 'SPE Montney/Duvernay Symposium', type: 'Symposium' },
+      { day: 3, title: 'Rock Physics for Quantitative Interpretation', type: 'Training' },
+      { day: 5, title: '7th SEG Latin America Virtual Conference', type: 'Conference' },
+      { day: 9, title: '4D Forum – Insight to Actions', type: 'Forum' },
+      { day: 10, title: 'SPE Workshop: Completion [full title]', type: 'Workshop' },
+      { day: 10, title: 'SPE Workshop: Digital [full title]', type: 'Workshop' },
+      { day: 10, title: 'Integrated Geoscience [full title]', type: 'Workshop' },
+      { day: 12, title: 'SPE Workshop: Subsea Fiber Optics', type: 'Workshop' },
+      { day: 12, title: 'SEG-GeoAI 2026 – The Next [full title]', type: 'Workshop' }
+    ];
+    const evF = EVENTS.filter((e) => s.evType === 'All' || e.type === s.evType);
+    const evTypes = ['All', 'Conference', 'Workshop', 'Training', 'Forum', 'Symposium'].map((x) => ({
+      label: x === 'All' ? 'All types' : x, pick: () => set({ evType: x }),
+      dot: x === 'All' ? 'display: none;' : 'width: 8px; height: 8px; border-radius: 99px; background: ' + TYPEC[x] + ';',
+      style: 'height: 36px; padding: 0 14px; border-radius: 999px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; ' + (s.evType === x ? 'background: #0E1111; color: #FFFFFF; border: 1px solid #0E1111;' : 'background: #FFFFFF; color: #3A403A; border: 1px solid #DDE0D8;')
+    }));
+    const cells = [];
+    for (let i = 0; i < 42; i++) {
+      const inMonth = i >= 6 && i < 36;
+      const n = inMonth ? i - 5 : (i < 6 ? 26 + i : i - 35);
+      const evs = inMonth ? evF.filter((e) => e.day === n) : [];
+      const sel = inMonth && s.day === n;
+      const today = inMonth && n === 10;
+      cells.push({
+        n, first: evs.length ? evs[0].title : '',
+        aria: inMonth ? ('November ' + n + ', ' + evs.length + ' events') : 'Outside month',
+        dots: evs.map((e) => 'width: 7px; height: 7px; border-radius: 99px; background: ' + TYPEC[e.type] + ';'),
+        pick: () => { if (inMonth) set({ day: n }); },
+        numStyle: 'font-size: 14px; font-weight: 600; ' + (today ? 'background: #C6F135; color: #0E1111; border-radius: 6px; padding: 1px 6px;' : ''),
+        style: 'min-height: 84px; border-radius: 12px; padding: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; text-align: left; min-width: 0; ' +
+          (sel ? 'background: #0E1111; color: #FFFFFF; border: 1px solid #0E1111;' : inMonth ? 'background: #FAFBF7; color: #0E1111; border: 1px solid #ECEEE8;' : 'background: transparent; color: #A7AEA7; border: 1px solid transparent;')
+      });
+    }
+    // fix first-line color on selected cell is inherited; ok
+    const dayEvents = evF.filter((e) => e.day === s.day).map((e) => Object.assign({}, e, {
+      pill: 'align-self: flex-start; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; color: #FFFFFF; background: ' + TYPEC[e.type] + ';'
+    }));
+    const todayEvents = EVENTS.filter((e) => e.day === 10).map((e) => Object.assign({}, e, {
+      dotStyle: 'width: 10px; height: 10px; border-radius: 99px; margin-top: 5px; flex: 0 0 auto; background: ' + TYPEC[e.type] + ';'
+    }));
+    // more
+    const MORE = [
+      { id: 'quiz', name: 'Quiz', desc: 'A 2-minute daily quiz on the week’s energy news. Keep your streak, compare with peers.' },
+      { id: 'media', name: 'Media', desc: 'Video explainers and podcast episodes from operators, analysts and engineers.' },
+      { id: 'snap', name: 'Snap', desc: 'Swipeable story cards — the day’s headlines in under a minute.' },
+      { id: 'blog', name: 'Blog', desc: 'Long-form analysis and opinion from the EnergyStacks desk.' }
+    ];
+    const moreItems = MORE.map((m) => {
+      const on = !!s.notify[m.id];
+      return Object.assign({}, m, {
+        pressed: on ? 'true' : 'false',
+        label: on ? '✓ We’ll notify you' : 'Notify me',
+        toggle: () => set({ notify: Object.assign({}, s.notify, { [m.id]: !on }) }),
+        style: 'height: 44px; border-radius: 12px; font-weight: 600; font-size: 14px; ' + (on ? 'background: #C6F135; color: #0E1111; border: 1px solid #0E1111;' : 'background: #0E1111; color: #FFFFFF; border: 1px solid #0E1111;')
+      });
+    });
+    return {
+      tabs, ticker,
+      isNews: s.tab === 'news', isMarkets: s.tab === 'markets', isJobs: s.tab === 'jobs', isEvents: s.tab === 'events', isMore: s.tab === 'more',
+      q: s.q, onSearch: (e) => set({ q: e.target.value }),
+      sectors, topics, hasFilters: s.sector !== 'All' || activeTopics.length > 0 || !!q,
+      clearAll: () => set({ sector: 'All', topics: {}, q: '' }),
+      featured, hasFeatured: list.length > 0, rest, noResults: list.length === 0,
+      countLabel: list.length + (list.length === 1 ? ' story' : ' stories'),
+      commodities, ranges, rigs,
+      todayEvents,
+      goMarkets: () => set({ tab: 'markets' }), goEvents: () => set({ tab: 'events', day: 10 }),
+      goSubscribe: () => set({ tab: 'news' }),
+      playBrief: () => set({ playing: { id: 'brief', title: 'Daily energy brief — Tue, Nov 10', dur: '3 min' } }),
+      notSubscribed: !s.subscribed, subscribed: s.subscribed,
+      subscribe: (e) => { if (e && e.preventDefault) e.preventDefault(); set({ subscribed: true }); },
+      hasPlaying: !!s.playing, playing: s.playing || {}, stop: () => set({ playing: null }),
+      levels, jobs, job, jq: s.jq, onJobSearch: (e) => set({ jq: e.target.value }),
+      jobCount: jobs.length + ' open roles',
+      toggleSave: () => set({ saved: Object.assign({}, s.saved, { [job.id]: !isSaved }) }),
+      saveLabel: isSaved ? 'Saved ✓' : 'Save',
+      saveStyle: 'height: 48px; padding: 0 18px; border-radius: 12px; font-weight: 600; font-size: 15px; ' + (isSaved ? 'background: #C6F135; border: 1px solid #0E1111; color: #0E1111;' : 'background: #FFFFFF; border: 1px solid #DDE0D8; color: #0E1111;'),
+      evTypes, cells, dows: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+      dayEvents, noDayEvents: dayEvents.length === 0,
+      dayLabel: (s.day === 10 ? 'Today · ' : '') + 'Nov ' + s.day + ', 2026',
+      goToday: () => set({ day: 10 }),
+      moreItems
+    };
+  }
+}
+</script>
+</body>
+</html>
