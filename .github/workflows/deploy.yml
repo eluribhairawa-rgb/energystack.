@@ -1,0 +1,99 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - staging
+      - main
+
+permissions:
+  id-token: write   # required for OIDC
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & Deploy (${{ github.ref_name }})
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-1
+      # Resolved per branch below via environment matrix
+      ENVIRONMENT: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: >-
+            arn:aws:iam::${{
+              github.ref_name == 'main' && '838446159776' || '245908834931'
+            }}:role/openpetro-gha-app-${{
+              github.ref_name == 'main' && 'production' || 'staging'
+            }}-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set image tag
+        id: image
+        run: |
+          PREFIX="openpetro-${{ env.ENVIRONMENT }}"
+          REPO="${{ steps.ecr-login.outputs.registry }}/${PREFIX}-web"
+          TAG="${REPO}:${{ github.sha }}"
+          LATEST="${REPO}:latest"
+          echo "tag=${TAG}"     >> "$GITHUB_OUTPUT"
+          echo "latest=${LATEST}" >> "$GITHUB_OUTPUT"
+          echo "repo=${REPO}"   >> "$GITHUB_OUTPUT"
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --tag "${{ steps.image.outputs.tag }}" \
+            --tag "${{ steps.image.outputs.latest }}" \
+            .
+
+      - name: Push to ECR
+        run: |
+          docker push "${{ steps.image.outputs.tag }}"
+          docker push "${{ steps.image.outputs.latest }}"
+
+      - name: Deploy to ECS (force new deployment)
+        run: |
+          PREFIX="openpetro-${{ env.ENVIRONMENT }}"
+          aws ecs update-service \
+            --cluster "${PREFIX}-cluster" \
+            --service "${PREFIX}-service" \
+            --force-new-deployment \
+            --region "${{ env.AWS_REGION }}"
+
+      - name: Wait for ECS service to stabilize
+        timeout-minutes: 15
+        run: |
+          PREFIX="openpetro-${{ env.ENVIRONMENT }}"
+          # aws ecs wait polls every 15s with a default cap of 40 attempts (10 min).
+          # We loop manually to extend that to 15 min (60 attempts x 15s).
+          for i in $(seq 1 60); do
+            STATUS=$(aws ecs describe-services \
+              --cluster "${PREFIX}-cluster" \
+              --services "${PREFIX}-service" \
+              --region "${{ env.AWS_REGION }}" \
+              --query 'services[0].deployments[0].rolloutState' \
+              --output text)
+            echo "Attempt ${i}/60 - rolloutState: ${STATUS}"
+            if [ "${STATUS}" = "COMPLETED" ]; then
+              echo "Deployment to ${{ env.ENVIRONMENT }} complete."
+              exit 0
+            fi
+            if [ "${STATUS}" = "FAILED" ]; then
+              echo "Deployment FAILED."
+              exit 1
+            fi
+            sleep 15
+          done
+          echo "Timed out waiting for ECS service to stabilize."
+          exit 1

@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Disallow: /profile
+Disallow: /login
+Disallow: /signup
+Disallow: /auth/
+Disallow: /verify-otp
+Disallow: /verify-login-otp
+Disallow: /verify-reset-otp
+Disallow: /forgot-password
+Disallow: /update-password
+Disallow: /unsubscribe
+Disallow: /confirm-subscription
+Disallow: /api/
+
+Sitemap: https://energystacks.ai/sitemap.xml
